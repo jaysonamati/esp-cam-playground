@@ -4,12 +4,9 @@ use esp_idf_hal::gpio::*;
 use esp_idf_hal::peripheral::Peripheral;
 use esp_idf_sys::*;
 
-
-
-
 pub struct FrameBuffer<'a> {
     fb: *mut camera::camera_fb_t,
-    _p: PhantomData<&'a camera::camera_fb_t>
+    _p: PhantomData<&'a camera::camera_fb_t>,
 }
 
 impl<'a> FrameBuffer<'a> {
@@ -277,8 +274,7 @@ impl<'a> Camera<'a> {
             grab_mode: camera::camera_grab_mode_t_CAMERA_GRAB_WHEN_EMPTY,
 
             fb_location: camera::camera_fb_location_t_CAMERA_FB_IN_PSRAM,
-            sccb_i2c_port: -1,
-
+            //sccb_i2c_port: -1,
             __bindgen_anon_1: camera::camera_config_t__bindgen_ty_1 {
                 pin_sccb_sda: pin_sda.pin(),
             },
@@ -319,3 +315,4 @@ impl<'a> Drop for Camera<'a> {
         esp!(unsafe { camera::esp_camera_deinit() }).expect("error during esp_camera_deinit")
     }
 }
+

@@ -1,7 +1,7 @@
 use std::fmt::Write;
 
 use esp_idf_hal::{delay::FreeRtos, modem::Modem};
-use esp_idf_svc::{eventloop::EspSystemEventLoop, nvs::EspDefaultNvsPartition, wifi::{AuthMethod, ClientConfiguration, Configuration, EspWifi}};
+use esp_idf_svc::{eventloop::EspSystemEventLoop, nvs::EspDefaultNvsPartition, wifi::{AuthMethod, ClientConfiguration, Configuration, EspWifi, PmfConfiguration, ScanMethod}};
 
 
 
@@ -33,6 +33,8 @@ impl Wifi {
                 auth_method: AuthMethod::WPA2Personal,
                 password: wifi_pwd_64,
                 channel: None,
+                scan_method: ScanMethod::FastScan,
+                pmf_cfg: PmfConfiguration::NotCapable,
             }))
             .expect("Failed to set wifi driver configuration");
 

@@ -2,6 +2,7 @@ use anyhow::{bail, Result};
 use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
     hal::peripheral,
+    nvs::EspDefaultNvsPartition,
     wifi::{AuthMethod, BlockingWifi, ClientConfiguration, Configuration, EspWifi},
 };
 use log::info;
@@ -20,7 +21,11 @@ pub fn wifi(
         auth_method = AuthMethod::None;
         info!("Wifi password is empty");
     }
-    let mut esp_wifi = EspWifi::new(modem, sysloop.clone(), None)?;
+    let mut esp_wifi = EspWifi::new(
+        modem,
+        sysloop.clone(),
+        Some(EspDefaultNvsPartition::take().expect("Failed to take default nvs partition")),
+    )?;
 
     let mut wifi = BlockingWifi::wrap(&mut esp_wifi, sysloop)?;
 
@@ -52,17 +57,24 @@ pub fn wifi(
 
     let mut ssid_string_32: heapless::String<32> = heapless::String::new();
     let mut pwd_string_64: heapless::String<64> = heapless::String::new();
-    ssid_string_32.push_str(ssid.into()).expect("Failed to convert str to String<32>");
-    pwd_string_64.push_str(pass.into()).expect("Failed to convert str to String<32>");
+    ssid_string_32
+        .push_str(ssid.into())
+        .expect("Failed to convert str to String<32>");
+    pwd_string_64
+        .push_str(pass.into())
+        .expect("Failed to convert str to String<32>");
 
     wifi.set_configuration(&Configuration::Client(ClientConfiguration {
-        ssid: ssid_string_32,
-        password: pwd_string_64,
+        ssid: ssid
+            .try_into()
+            .expect("Could not parse the given SSID into WiFi config"),
+        password: pass
+            .try_into()
+            .expect("Could not parse the given password into WiFi config"),
         channel,
         auth_method,
         ..Default::default()
     }))?;
-
     info!("Connecting wifi...");
 
     wifi.connect()?;
@@ -77,3 +89,4 @@ pub fn wifi(
 
     Ok(Box::new(esp_wifi))
 }
+
